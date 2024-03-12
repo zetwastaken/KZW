@@ -7,6 +7,7 @@
 
 using namespace std;
 
+enum metoda{Brak,   SortR,  SortRQ, Schrage,   Potts,    C100, Carlie};
 /*
 ----------------------------------------------------------------
              123   SortR  SortRQ Schrage   Potts    C100 Carlier
@@ -24,49 +25,18 @@ suma:     168306  127362  103378  100926  100381  100010  100000
 */
 
 
-
-struct dane{
+class rozwiazanie{
+    public:
+    struct dane{
     int indeks;
     int R;
     int P;
     int Q;
-
-
-};
-
-void loadData( string fname, int maxLines){
-    fstream file (fname, ios::in);
-    int i=0;
-    if(file.is_open())
-    {
-        string line, word;
-
-        while(getline(file, line) and i < maxLines)
-        {
-            vector<string> row;
-            stringstream str(line);
-
-            while(getline(str, word, ',')) {
-                row.push_back(word);
-                cout << row.back();
-            }
-        }
-    
-    }
-    else {
-        cout << "Could not open the file\n";
-    }
-}
-
-
-int main(){
-
-    // fstream plik;
-    // plik.open("dane1.txt");
-
+    };
     vector<dane> tablica;
-    string fname = "/Users/zet/Studia/KZW/24_dane1.txt";
-    fstream file (fname, ios::in);
+    
+    void loadData(string name){
+    fstream file (name, ios::in);
     int maxLines = 24;
 
     if(file.is_open())
@@ -78,17 +48,24 @@ int main(){
         {
             vector<string> row;
             stringstream str(line);
-
+            string n;
             while(getline(str, word, ' ')) {
                 row.push_back(word);
                 
             }
             dane temp;
-            temp.indeks = i+1;
+            if (row.size() == 1)
+            {
+                //cout << row.at(0) << endl;
+                maxLines = stoi(row.at(0))+1;
+            }
+            else{
+            temp.indeks = i;
             temp.R = stoi(row.at(0));
             temp.P = stoi(row.at(1));
             temp.Q = stoi(row.at(2));
             tablica.push_back(temp);
+            }
             i++;
         }
     
@@ -96,20 +73,75 @@ int main(){
     else {
         cout << "Could not open the file\n";
     }
+    }
 
-    for (int i = 0; i < maxLines; i++) {
-        cout << tablica.at(i).indeks << " " << tablica.at(i).R << " " << tablica.at(i).P << " " << tablica.at(i).Q << endl;
-    }  
-
-    sort(tablica.begin(), tablica.end(), [](dane a, dane b) {
+    void sortR(){
+        sort(tablica.begin(), tablica.end(), [](dane a, dane b) {
         return a.R < b.R;
     });
+    }
 
-    cout << "----------\n";
+    void printData(){
+    for (int i = 0; i < tablica.size(); i++) {
+        cout << tablica.at(i).indeks << " ";
+    } 
+    }
 
-    for (int i = 0; i < maxLines; i++) {
-        cout << tablica.at(i).indeks << " "; // << " " << tablica.at(i).czas_dostarczenia << " " << tablica.at(i).czas_trwania << " " << tablica.at(i).czas_stygniecia << endl;
-    }  
+};
+
+class wszystkieRozwiazania:rozwiazanie{
+    public:
+    vector <string> daneXtxt;
+    wszystkieRozwiazania(string folderPath, int n){
+        for (size_t i = 0; i < n; i++)
+        {
+            string temp = folderPath+"dane"+to_string(i+1)+".txt";
+            daneXtxt.push_back(temp);
+        }
+    }
+    void rozwiazWszystkie(int metoda){
+        for (size_t i = 0; i < daneXtxt.size(); i++)
+        {
+            rozwiazanie wyniki;
+            wyniki.loadData(daneXtxt.at(i));
+            switch (metoda)
+            {
+            case Brak:
+
+                break;
+            case SortR:
+                wyniki.sortR();
+
+                break;
+            case SortRQ:
+
+
+            break;
+            default:
+                break;
+            }
+            cout << "\n\n----------------\n";
+            cout << "dane"+to_string(i+1)+".txt" << endl;;
+            wyniki.printData();
+            cout << "\n----------------";
+
+        }
+        
+        
+
+    }
+
+    
+};
+
+
+int main(){
+
+    string danetxt = "/Users/zet/Studia/KZW/lab1_264193_264238/";
+    
+    wszystkieRozwiazania dane(danetxt,4);
+    dane.rozwiazWszystkie(SortR);
+
 
 
     return 0;
