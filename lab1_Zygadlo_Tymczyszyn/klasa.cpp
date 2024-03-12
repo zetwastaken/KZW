@@ -74,17 +74,27 @@ class rozwiazanie{
     }
     }
 
+    void printData(){
+    for (int i = 0; i < tablica.size(); i++) {
+        cout << tablica.at(i).indeks << " ";
+    } 
+    }
+
+    /*
+    ###########################
+    ## Funkcje do sortowania ##
+    ###########################
+    */
+
+
+   
     void sortR(){
         sort(tablica.begin(), tablica.end(), [](dane a, dane b) {
         return a.R < b.R;
     });
     }
 
-    void printData(){
-    for (int i = 0; i < tablica.size(); i++) {
-        cout << tablica.at(i).indeks << " ";
-    } 
-    }
+
 
 };
 
