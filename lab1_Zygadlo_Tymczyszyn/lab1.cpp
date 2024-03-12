@@ -137,7 +137,7 @@ class wszystkieRozwiazania:rozwiazanie{
 
 int main(){
 
-    string danetxt = "/Users/zet/Studia/KZW/lab1_264193_264238/";
+    string danetxt = "/Users/zet/Studia/KZW/lab1_Zygadlo_Tymczyszyn/";
     
     wszystkieRozwiazania dane(danetxt,4);
     dane.rozwiazWszystkie(SortR);
