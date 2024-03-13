@@ -5,7 +5,7 @@
 #include <sstream>
 #include <algorithm>
 using namespace std;
-enum metoda{Brak,   SortR,  SortRQ, Schrage,   Potts,    C100, Carlie};
+enum metoda{Brak,   SortR,  SortRQ, Schrage,   Potts,    C100, Carlie, InMiddleLongestR};
 
 /*
 ----------------------------------------------------------------
@@ -95,6 +95,57 @@ class rozwiazanie{
     }
 
 
+    //NIE DZIAŁ
+    void sortRQ(){
+        sort(tablica.begin(), tablica.end(), [](dane a, dane b){
+         if (a.R < b.R) return true;
+         if (a.R == b.R) return a.Q < b.Q;
+        return false;
+        });
+    }
+    // NOPE nie warto
+
+
+    void inMiddleLongestR(){
+        vector <dane> temp1 = tablica;
+        vector <dane> temp2;
+        temp2.resize(tablica.size());
+        sort(temp1.begin(), temp1.end(), [](dane a, dane b) {
+        return a.R < b.R;
+         });
+
+        int i = 1;
+        int middle = tablica.size()/2;
+        temp2.at(middle) = temp1.at(0);
+        temp1.erase(temp1.begin());
+
+        while (temp1.size() > 0)
+        {
+        if (middle+i < tablica.size())
+        {
+        temp2.at(middle+i) = temp1.at(0);
+        temp1.erase(temp1.begin());
+        //cout <<"I: " << i << " size+i: " << middle+i  << endl;
+        }    
+        temp2.at(middle-i) = temp1.at(0);
+        temp1.erase(temp1.begin());
+        //cout <<"I: " << i << " size-i: " << middle-i  << endl;
+        i++;
+        }
+
+    
+
+
+        //sort(temp2.begin(), temp2.end(), [](dane a, dane b) { return a.indeks < b.indeks; });
+
+        // for (size_t i = 0; i < temp2.size(); i++)
+        // {
+        //     cout << temp2.at(i).indeks << " " << temp2.at(i).R << endl;
+        // }
+        
+        tablica = temp2;
+        
+    }
 
 };
 
@@ -117,13 +168,17 @@ class wszystkieRozwiazania:rozwiazanie{
             {
             case Brak:
 
-                break;
+            break;
             case SortR:
                 wyniki.sortR();
 
-                break;
+            break;
             case SortRQ:
+                wyniki.sortRQ();
 
+            break;
+            case InMiddleLongestR:
+                wyniki.inMiddleLongestR();
 
             break;
             default:
