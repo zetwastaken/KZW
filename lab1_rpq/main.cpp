@@ -1,6 +1,5 @@
 #include "src/Solution.cpp"
 #include <filesystem>
-#include <iostream>
 
 /*
 ----------------------------------------------------------------
@@ -23,8 +22,8 @@ int main() {
   std::filesystem::path currentFile(__FILE__);
   std::filesystem::path currentFileDir = currentFile.parent_path();
 
-  wszystkieRozwiazania dane(currentFileDir.string(), 4);
-  dane.rozwiazWszystkie(SortR);
+  AllSolutions dane(currentFileDir.string(), 4);
+  dane.solveAll(SortRQ);
 
   return 0;
 }

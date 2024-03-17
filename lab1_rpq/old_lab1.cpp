@@ -24,8 +24,8 @@ suma:     168306  127362  103378  100926  100381  100010  100000
 */
 
 
-class rozwiazanie{
-    rozwiazanie(string name){
+class Solution{
+    Solution(string name){
 
     }
 
@@ -33,7 +33,7 @@ class rozwiazanie{
 
 };
 
-struct dane{
+struct Task{
     int indeks;
     int R;
     int P;
@@ -48,7 +48,7 @@ int main(){
     // fstream plik;
     // plik.open("dane1.txt");
 
-    vector<dane> tablica;
+    vector<Task> tasks;
     string fname = "/Users/zet/Studia/KZW/lab1_264193_264238/24_dane1.txt";
     fstream file (fname, ios::in);
     int maxLines = 24;
@@ -67,7 +67,7 @@ int main(){
                 row.push_back(word);
                 
             }
-            dane temp;
+            Task temp;
             temp.indeks = i+1;
             if (row.at(1) != " ")
             {
@@ -77,7 +77,7 @@ int main(){
             temp.R = stoi(row.at(0));
             temp.P = stoi(row.at(1));
             temp.Q = stoi(row.at(2));
-            tablica.push_back(temp);
+            tasks.push_back(temp);
             i++;
         }
     
@@ -87,26 +87,26 @@ int main(){
     }
 
     for (int i = 0; i < maxLines; i++) {
-        cout << tablica.at(i).indeks << " " << tablica.at(i).R << " " << tablica.at(i).P << " " << tablica.at(i).Q << endl;
+        cout << tasks.at(i).indeks << " " << tasks.at(i).R << " " << tasks.at(i).P << " " << tasks.at(i).Q << endl;
     }  
 
 
      cout << "----------\nSortR\n----------\n";
-    sort(tablica.begin(), tablica.end(), [](dane a, dane b) {
+    sort(tasks.begin(), tasks.end(), [](Task a, Task b) {
         return a.R < b.R;
     });
     for (int i = 0; i < maxLines; i++) {
-        cout << tablica.at(i).indeks << " "; // << " " << tablica.at(i).czas_dostarczenia << " " << tablica.at(i).czas_trwania << " " << tablica.at(i).czas_stygniecia << endl;
+        cout << tasks.at(i).indeks << " "; // << " " << tasks.at(i).czas_dostarczenia << " " << tasks.at(i).czas_trwania << " " << tasks.at(i).czas_stygniecia << endl;
     }  
     cout << "----------\nSortRQ\n----------\n";
-    sort(tablica.begin(), tablica.end(), [](dane a, dane b) {
+    sort(tasks.begin(), tasks.end(), [](Task a, Task b) {
         if (a.R == b.R) {
             return a.Q < b.Q;
         }
         return a.R < b.R;
     });
     for (int i = 0; i < maxLines; i++) {
-        cout << tablica.at(i).indeks << " "; // << " " << tablica.at(i).czas_dostarczenia << " " << tablica.at(i).czas_trwania << " " << tablica.at(i).czas_stygniecia << endl;
+        cout << tasks.at(i).indeks << " "; // << " " << tasks.at(i).czas_dostarczenia << " " << tasks.at(i).czas_trwania << " " << tasks.at(i).czas_stygniecia << endl;
     }  
    
 
