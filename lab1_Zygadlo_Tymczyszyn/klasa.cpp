@@ -5,7 +5,7 @@
 #include <sstream>
 #include <algorithm>
 using namespace std;
-enum metoda{Brak,   SortR,  SortRQ, Schrage,   Potts,    C100, Carlie, InMiddleLongestR};
+enum metoda{Brak, SortR, SortRQ, Schrage, Potts, C100, Carlie, InMiddleLongestR};
 
 /*
 ----------------------------------------------------------------
@@ -98,11 +98,12 @@ class rozwiazanie{
     //NIE DZIAŁ
     void sortRQ(){
         sort(tablica.begin(), tablica.end(), [](dane a, dane b){
-         if (a.R < b.R) return true;
-         if (a.R == b.R) return a.Q < b.Q;
+        if (a.R < b.R) return true;
+        if (a.R == b.R) return a.Q < b.Q;
         return false;
         });
     }
+    
     // NOPE nie warto
 
 
@@ -111,7 +112,7 @@ class rozwiazanie{
         vector <dane> temp2;
         temp2.resize(tablica.size());
         sort(temp1.begin(), temp1.end(), [](dane a, dane b) {
-        return a.R < b.R;
+        return a.P < b.P;
          });
 
         int i = 1;
@@ -132,19 +133,48 @@ class rozwiazanie{
         //cout <<"I: " << i << " size-i: " << middle-i  << endl;
         i++;
         }
-
-    
-
-
         //sort(temp2.begin(), temp2.end(), [](dane a, dane b) { return a.indeks < b.indeks; });
 
         // for (size_t i = 0; i < temp2.size(); i++)
         // {
         //     cout << temp2.at(i).indeks << " " << temp2.at(i).R << endl;
         // }
-        
         tablica = temp2;
         
+    }
+
+    void schrage(){
+        vector <dane> N = tablica;
+        vector <dane> G;
+        vector <dane> C;
+        int t = 0;
+        int Cmax = 0;
+        while (N.size() > 0 or G.size() > 0)
+        {
+            while (N.size() > 0 and N.at(0).R <= t)
+            {
+                G.push_back(N.at(0));
+                N.erase(N.begin());
+            }
+            if (G.size() == 0)
+            {
+                t = N.at(0).R;
+            }
+            else
+            {
+                sort(G.begin(), G.end(), [](dane a, dane b) { return a.Q > b.Q; });
+                C.push_back(G.at(0));
+                t += G.at(0).P;
+                Cmax = max(Cmax, t+G.at(0).Q);
+                G.erase(G.begin());
+            }
+        }
+        // cout << "Cmax: " << Cmax << endl;
+        tablica = C;
+    }
+
+    void potts(){
+       
     }
 
 };
@@ -171,16 +201,20 @@ class wszystkieRozwiazania:rozwiazanie{
             break;
             case SortR:
                 wyniki.sortR();
-
-            break;
+                break;
             case SortRQ:
                 wyniki.sortRQ();
 
-            break;
+                break;
             case InMiddleLongestR:
                 wyniki.inMiddleLongestR();
-
-            break;
+                break;
+            case Schrage:
+                wyniki.schrage();
+                break;
+            case Potts:
+                wyniki.potts();
+                break;
             default:
                 break;
             }
