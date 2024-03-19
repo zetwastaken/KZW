@@ -15,20 +15,18 @@ class Solution {
 public:
   vector<Task> tasks;
 
-  void loadData(std::string name);
+  void loadData(string name);
   void printData();
   int calculateCMax();
   void printCMax();
-  virtual void solve();
+  void sortR();
+  void sortRQ();
 };
 
-class SortR : public Solution{
-  public:
-  void solve() override;
-};
+class AllSolutions : Solution {
+public:
+  vector<string> daneXtxt;
+  AllSolutions(string folderPath, int n);
 
-class Schrage : public Solution{
-  public:
-  void solve() override;
-  private:
+  void solveAll(int method);
 };
