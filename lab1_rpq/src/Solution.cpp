@@ -4,11 +4,11 @@
 #include <iostream>
 #include <sstream>
 using namespace std;
-enum metoda { None, SortR, SortRQ, Schrage, Potts, C100, Carlie };
+enum metoda { sortR, sortRQ, schrage, potts, C100, carlie };
 
 Task::Task(int id, int r, int p, int q) : id(id), R(r), P(p), Q(q) {}
 
-void Solution::loadData(string name) {
+void Solution::loadData(std::string name) {
   fstream file(name, ios::in);
   int maxLines = 24;
 
@@ -55,48 +55,12 @@ int Solution::calculateCMax() {
 
 void Solution::printCMax() { cout << "CMax = " << calculateCMax() << endl; }
 
-void Solution::sortR() {
+void Solution::solve() {}
+
+void SortR::solve() {
   sort(tasks.begin(), tasks.end(),
        [](const Task &a, const Task &b) { return a.R < b.R; });
 }
 
-void Solution::sortRQ() { // temu wychodzą czasy jak zwykłemu sortR :((
-  sort(tasks.begin(), tasks.end(), [](const Task &a, const Task &b) {
-    if (a.R == b.R) {
-      return a.Q < b.Q;
-    }
-    return a.R < b.R;
-  });
-}
-
-AllSolutions::AllSolutions(string folderPath, int n) {
-  for (size_t i = 0; i < n; i++) {
-    string temp = folderPath + "/data/dane" + to_string(i + 1) + ".txt";
-    daneXtxt.push_back(temp);
-  }
-}
-
-void AllSolutions::solveAll(int metoda) {
-  for (size_t i = 0; i < daneXtxt.size(); i++) {
-    Solution wyniki;
-    wyniki.loadData(daneXtxt.at(i));
-    switch (metoda) {
-    case None:
-
-      break;
-    case SortR:
-      wyniki.sortR();
-      break;
-    case SortRQ:
-      wyniki.sortRQ();
-      break;
-    default:
-      break;
-    }
-
-    cout << "\ndane" + to_string(i + 1) + ".txt" << endl;
-    wyniki.printData();
-    cout << "\n----------------\n";
-    wyniki.printCMax();
-  }
+void Schrage::solve() {
 }
