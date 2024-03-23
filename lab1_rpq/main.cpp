@@ -1,6 +1,8 @@
-#include "src/Solution.cpp"
+#include <chrono>
 #include <filesystem>
 #include <memory>
+
+#include "src/Solution.cpp"
 
 constexpr int NUMBER_OF_FILES = 4;
 
@@ -17,44 +19,64 @@ std::vector<std::string> loadDataFromFiles() {
   return allData;
 }
 
-void process(std::unique_ptr<Solution> results, string data, int i) {
+void solveSortR(string data, int i) {
+  std::unique_ptr<Problem> results = std::make_unique<SortR>();
   results->loadData(data);
   results->solve();
   cout << "\ndane" + to_string(i + 1) + ".txt" << endl;
   results->printData();
-  cout << "\n----------------\n";
   results->printCMax();
 }
 
-void solveSortR(string data, int i) {
-  std::unique_ptr<Solution> results = std::make_unique<SortR>();
-  process(std::move(results), data, i);
+void solveSchrage(string data, int i) {
+  std::unique_ptr<Problem> results = std::make_unique<Schrage>();
+  results->loadData(data);
+  results->solve();
+  cout << "\ndane" + to_string(i + 1) + ".txt" << endl;
+  results->printData();
+  results->printCMax();
 }
 
-void solveSchrage(string data, int i) {
-  std::unique_ptr<Solution> results = std::make_unique<Schrage>();
-  process(std::move(results), data, i);
+void solveTabuSearch(string data, int i) {
+  TabuSearch results(100, 10, i + 1);
+  results.loadData(data);
+
+  vector<int> bestSolution = results.search();
+
+  cout << "[TabuSearch] result: ";
+  for (int taskId : bestSolution) {
+    cout << taskId + 1 << " ";
+  }
+  cout << endl;
 }
 
 void SolveForAllData(int method) {
   std::vector<std::string> allData = loadDataFromFiles();
   for (size_t i = 0; i < NUMBER_OF_FILES; i++) {
     switch (method) {
-    case sortR:
-      solveSortR(allData.at(i), i);
-      break;
-    case schrage:
-      solveSchrage(allData.at(i), i);
-      break;
-    default:
-      break;
+      case sortR:
+        solveSortR(allData.at(i), i);
+        break;
+      case schrage:
+        solveSchrage(allData.at(i), i);
+        break;
+      case tabuSearch:
+        solveTabuSearch(allData.at(i), i);
+        break;
+      default:
+        break;
     }
   }
 }
 
 int main() {
+  auto start = std::chrono::steady_clock::now();
+  SolveForAllData(tabuSearch);
+  auto end = std::chrono::steady_clock::now();
 
-  SolveForAllData(sortR);
+  auto elapsed = end - start;
+  double seconds = std::chrono::duration<double>(elapsed).count();
+  std::cout << "Execution time: " << seconds << " s" << std::endl;
 
   return 0;
 }
