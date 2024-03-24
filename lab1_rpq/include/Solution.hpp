@@ -3,71 +3,72 @@
 using namespace std;
 
 class Task {
-public:
+ public:
   Task(int id, int r, int p, int q);
   Task();
   Task(const Task &other);
 
   int id;
-  int R; // czas przygotowania
-  int P; // czas wykonywania
-  int Q; // czas dostareczenia
+  int R;  // czas przygotowania
+  int P;  // czas wykonywania
+  int Q;  // czas dostareczenia
 };
 class Problem {
-public:
-  vector<Task> tasks;
-  vector<int> solution;
-
+ public:
   Problem();
   Problem(const vector<Task> &tasks, const vector<int> &sol);
   Problem(const vector<Task> &tasks);
+
   void loadData(std::string name);
-  void printData();
   void printSolution();
-  int calculateCMax();
-  void printCMax();
+  int getCMax();
   virtual void solve();
-  int new_calculateCMax();
+
+  vector<Task> tasks;
+  vector<Task> initiallyOrderedTasks;
+  vector<int> solution;
 };
 
 class SortR : public Problem {
-public:
+ public:
   void solve() override;
 };
 
 class Schrage : public Problem {
-public:
+ public:
   Schrage();
   Schrage(const vector<Task> &tasks);
 
   void solve() override;
-  vector<Task> sortedList;
 
-private:
-  int t{0};
-  int Cmax{0};
+ private:
   Task e;
   vector<Task> readyQueue;
   int minR();
-  void addToReadyQueue();
-  void addToSortedList();
+  void addTaskToReadyQueue();
+  void addTaskToSolution();
 };
 
 class TabuSearch : public Problem {
-public:
-  TabuSearch(int maxIter, int tabu_list_size, int current_data);
+ public:
+  TabuSearch(int max_iterations, int tabu_list_size, int current_data);
 
-  vector<int> search();
-  int evaluateSolution(const vector<int> &sol);
-  std::vector<std::vector<int>> get_neighbors(const std::vector<int> &solution);
+  void solve() override;
 
-private:
+ private:
   int maxIterations;
   vector<vector<int>> tabuList;
   vector<int> bestSolution;
   int bestCost;
   int tabuListSize;
-  vector<int> generateRandomSolution(int n);
-  vector<int> generateRandomSolution2();
   int currentData;
+  vector<int> generateRandomInitialSolution();
+  vector<int> generateSchrageAsInitialSolution();
+  void generateInitialSolution(Problem &currentSolution);
+  int evaluateSolution(const vector<int> &sol);
+  vector<vector<int>> generateSolutions(const vector<int> &sol);
+  bool solutionIsNotInTabuList(const vector<int> &solution);
+  void compareWithBestSolution(const vector<int> &currentBestSolution,
+                               int currentBestSolutionCost);
+  void checkCurrentTabuListSize();
 };

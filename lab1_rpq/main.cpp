@@ -11,48 +11,41 @@ std::vector<std::string> loadDataFromFiles() {
   std::filesystem::path currentFile(__FILE__);
   std::filesystem::path currentFileDir = currentFile.parent_path();
 
-  for (int i = 0; i < NUMBER_OF_FILES; i++) {
-    string temp =
-        currentFileDir.string() + "/data/dane" + to_string(i + 1) + ".txt";
-    allData.push_back(temp);
-  }
+  for (size_t i{0}; i < NUMBER_OF_FILES; ++i)
+    allData.push_back(currentFileDir.string() + "/data/dane" +
+                      to_string(i + 1) + ".txt");
+
   return allData;
+}
+
+void showSolution(std::unique_ptr<Problem> results, string data, int i) {
+  results->loadData(data);
+  results->solve();
+  cout << "dane" + to_string(i + 1) + ".txt" << endl;
+  results->printSolution();
+  std::cout << "CMax = " << results->getCMax() << endl;
+  std::cout << "---------------------------------" << endl;
 }
 
 void solveSortR(string data, int i) {
   std::unique_ptr<Problem> results = std::make_unique<SortR>();
-  results->loadData(data);
-  results->solve();
-  cout << "\ndane" + to_string(i + 1) + ".txt" << endl;
-  results->printData();
-  results->printCMax();
+  showSolution(std::move(results), data, i);
 }
 
 void solveSchrage(string data, int i) {
   std::unique_ptr<Problem> results = std::make_unique<Schrage>();
-  results->loadData(data);
-  results->solve();
-  cout << "\ndane" + to_string(i + 1) + ".txt" << endl;
-  results->printData();
-  results->printCMax();
+  showSolution(std::move(results), data, i);
 }
 
 void solveTabuSearch(string data, int i) {
-  TabuSearch results(100, 10, i + 1);
-  results.loadData(data);
-
-  vector<int> bestSolution = results.search();
-
-  cout << "[TabuSearch] result: ";
-  for (int taskId : bestSolution) {
-    cout << taskId + 1 << " ";
-  }
-  cout << endl;
+  std::unique_ptr<Problem> results =
+      std::make_unique<TabuSearch>(100, 10, i + 1);
+  showSolution(std::move(results), data, i);
 }
 
 void SolveForAllData(int method) {
   std::vector<std::string> allData = loadDataFromFiles();
-  for (size_t i = 0; i < NUMBER_OF_FILES; i++) {
+  for (size_t i{0}; i < NUMBER_OF_FILES; ++i) {
     switch (method) {
       case sortR:
         solveSortR(allData.at(i), i);
@@ -76,7 +69,7 @@ int main() {
 
   auto elapsed = end - start;
   double seconds = std::chrono::duration<double>(elapsed).count();
-  std::cout << "Execution time: " << seconds << " s" << std::endl;
+  std::cout << "Execution time: " << seconds << "s" << std::endl;
 
   return 0;
 }

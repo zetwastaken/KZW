@@ -18,22 +18,23 @@ Task::Task(const Task &other)
 
 Problem::Problem() {}
 
-Problem::Problem(const vector<Task> &newTasks) : tasks{newTasks} {}
+Problem::Problem(const vector<Task> &newTasks)
+    : tasks{newTasks}, initiallyOrderedTasks{newTasks} {}
 
 Problem::Problem(const vector<Task> &newTasks, const vector<int> &sol)
-    : tasks{newTasks}, solution{sol} {}
+    : tasks{newTasks}, solution{sol}, initiallyOrderedTasks{newTasks} {}
 
-void Problem::loadData(std::string name) {
+void Problem::loadData(string name) {
   fstream file(name, ios::in);
-  int maxLines = 24;
+  int maxLines{24};
 
   if (file.is_open()) {
-    int i = 0;
+    int i{0};
     string line, word;
 
     while (getline(file, line) and i < maxLines) {
       vector<string> row;
-      stringstream str(line);
+      stringstream str{line};
       while (getline(str, word, ' ')) {
         row.push_back(word);
       }
@@ -45,53 +46,55 @@ void Problem::loadData(std::string name) {
       }
       i++;
     }
+    initiallyOrderedTasks = tasks;
   } else {
-    std::cout << "Could not open the file\n";
+    cout << "Could not open the file" << endl;
   }
 }
 
-void Problem::printData() {
-  for (int i = 0; i < tasks.size(); i++) std::cout << tasks.at(i).id << " ";
-}
-
 void Problem::printSolution() {
-  for (int i = 0; i < tasks.size(); i++) std::cout << solution.at(i) + 1 << " ";
+  cout << "Solution: " << endl;
+  for (const auto &sol : solution) cout << sol << " ";
+  cout << endl;
 }
 
-int Problem::calculateCMax() {
-  int currentTime = 0;
-  int Cmax = 0;
-  for (const Task &task : tasks) {
-    currentTime = max(currentTime, task.R) + task.P;
-    Cmax = max(Cmax, currentTime + task.Q);
+int Problem::getCMax() {
+  int currentTime{0};
+  int Cmax{0};
+
+  for (const auto &sol : solution) {
+    int taskId{sol - 1};
+    currentTime = std::max(currentTime, initiallyOrderedTasks[taskId].R) +
+                  initiallyOrderedTasks[taskId].P;
+    Cmax = std::max(Cmax, currentTime + initiallyOrderedTasks[taskId].Q);
   }
   return Cmax;
 }
 
-void Problem::printCMax() { std::cout << "CMax = " << calculateCMax() << endl; }
-
 void Problem::solve() {}
 
 void SortR::solve() {
-  sort(tasks.begin(), tasks.end(),
-       [](const Task &a, const Task &b) { return a.R < b.R; });
+  std::sort(tasks.begin(), tasks.end(),
+            [&](const Task &a, const Task &b) { return a.R < b.R; });
+
+  std::transform(tasks.begin(), tasks.end(), std::back_inserter(solution),
+                 [&](const Task &task) { return task.id; });
 }
-// ! SCHRAGE ///////////////////////////////////////////////////////////////////
 
 Schrage::Schrage() {}
 Schrage::Schrage(const vector<Task> &tasks) : Problem(tasks) {}
 
 int Schrage::minR() {
   return (*std::min_element(tasks.begin(), tasks.end(),
-                            [](const Task &i, const Task &j) {
+                            [&](const Task &i, const Task &j) {
                               return (i.R != j.R) ? (i.R < j.R) : (i.P < j.P);
                             }))
       .R;
 }
 
-void Schrage::addToReadyQueue() {
+void Schrage::addTaskToReadyQueue() {
   auto min_element_r = std::min_element(
-      tasks.begin(), tasks.end(), [](const Task &i, const Task &j) {
+      tasks.begin(), tasks.end(), [&](const Task &i, const Task &j) {
         return (i.R != j.R) ? (i.R < j.R) : (i.P < j.P);
       });
 
@@ -102,144 +105,125 @@ void Schrage::addToReadyQueue() {
   }
 }
 
-void Schrage::addToSortedList() {
+void Schrage::addTaskToSolution() {
   auto max_element_q = std::max_element(
-      readyQueue.begin(), readyQueue.end(), [](const Task &i, const Task &j) {
-        return (i.Q != j.Q) ? (i.Q < j.Q) : (i.P > j.P);
+      readyQueue.begin(), readyQueue.end(), [&](const Task &i, const Task &j) {
+        return (i.Q != j.Q) ? (i.Q < j.Q) : (i.P < j.P);
       });
 
   if (max_element_q != readyQueue.end()) {
     e = *max_element_q;
     readyQueue.erase(max_element_q);
-    sortedList.push_back(e);
-    solution.push_back((*max_element_q).id);
+    solution.push_back(e.id);
   }
 }
 
 void Schrage::solve() {
+  int t{0};
   while (not readyQueue.empty() or not tasks.empty()) {
-    while (not tasks.empty() and minR() <= t) addToReadyQueue();
-	
+    while (not tasks.empty() and minR() <= t) addTaskToReadyQueue();
+
     if (readyQueue.empty()) {
       t = minR();
       continue;
     }
-    addToSortedList();
+    addTaskToSolution();
     t += e.P;
-    // Cmax = max(Cmax, t + e.Q);
   }
-}
-
-int Problem::new_calculateCMax() {
-  int n = tasks.size();
-  int currentTime = 0;
-  int Cmax = 0;
-
-  for (int i = 0; i < n; ++i) {
-    int taskId = solution[i];
-    currentTime = max(currentTime, tasks[taskId].R) + tasks[taskId].P;
-    Cmax = max(Cmax, currentTime + tasks[taskId].Q);
-  }
-
-  return Cmax;
 }
 
 TabuSearch::TabuSearch(int max_iterations, int tabu_list_size, int current_data)
     : maxIterations(max_iterations),
       tabuListSize(tabu_list_size),
       currentData(current_data),
-      bestCost(numeric_limits<int>::max()) {}
+      bestCost(std::numeric_limits<int>::max()) {}
 
-int TabuSearch::evaluateSolution(const vector<int> &sol) {
-  int n = tasks.size();
-  int currentTime = 0;
-  int Cmax = 0;
+int TabuSearch::evaluateSolution(const vector<int> &newSolution) {
+  int currentTime{0};
+  int Cmax{0};
 
-  for (int i = 0; i < n; ++i) {
-    int taskId = sol[i];
-    currentTime = max(currentTime, tasks[taskId].R) + tasks[taskId].P;
-    Cmax = max(Cmax, currentTime + tasks[taskId].Q);
+  for (const auto &sol : newSolution) {
+    int taskId{sol - 1};
+    currentTime = std::max(currentTime, initiallyOrderedTasks[taskId].R) +
+                  initiallyOrderedTasks[taskId].P;
+    Cmax = std::max(Cmax, currentTime + initiallyOrderedTasks[taskId].Q);
   }
-
   return Cmax;
 };
 
-std::vector<std::vector<int>> TabuSearch::get_neighbors(
-    const std::vector<int> &solution) {  // Added const qualifier
-  std::vector<std::vector<int>> neighbors;
-  for (size_t i = 0; i < solution.size(); i++) {
-    for (size_t j = i + 1; j < solution.size(); j++) {
-      std::vector<int> neighbor = solution;
-      std::swap(neighbor[i], neighbor[j]);
-      neighbors.push_back(neighbor);
+vector<vector<int>> TabuSearch::generateSolutions(const vector<int> &sol) {
+  vector<vector<int>> solutions;
+
+  for (size_t i{0}; i < sol.size(); ++i) {
+    for (size_t j{i + 1}; j < sol.size(); ++j) {
+      vector<int> modifiedSolution = sol;
+      std::swap(modifiedSolution[i], modifiedSolution[j]);
+      solutions.push_back(modifiedSolution);
     }
   }
-  return neighbors;
+  return solutions;
 }
 
-vector<int> TabuSearch::search() {
-  Problem currentSolution(tasks);
+void TabuSearch::generateInitialSolution(Problem &currentSolution) {
   if (currentData != 3)
-    currentSolution.solution = generateRandomSolution(tasks.size());
+    currentSolution.solution = generateRandomInitialSolution();
   else
-    currentSolution.solution = generateRandomSolution2();
-  bestSolution = currentSolution.solution;
-  bestCost = currentSolution.new_calculateCMax();
+    currentSolution.solution = generateSchrageAsInitialSolution();
+}
 
-  for (int iter = 0; iter < maxIterations; iter++) {
-    std::vector<std::vector<int>> neighbors =
-        get_neighbors(currentSolution.solution);
-    std::vector<int> best_neighbor;  // w każdej iteracji od nowa
-    int bestNeighborCost = std::numeric_limits<int>::max();
+void TabuSearch::compareWithBestSolution(const vector<int> &currentBestSolution,
+                                         int currentBestSolutionCost) {
+  if (currentBestSolutionCost < bestCost) {
+    bestSolution = currentBestSolution;
+    bestCost = currentBestSolutionCost;
+  }
+}
+void TabuSearch::checkCurrentTabuListSize() {
+  if (tabuList.size() > tabuListSize) tabuList.erase(tabuList.begin());
+}
 
-    for (const auto &neighbor : neighbors) {
-      if (std::none_of(
-              tabuList.begin(), tabuList.end(),
-              [&](const auto &element) { return element == neighbor; })) {
-        int neighborCost = evaluateSolution(neighbor);
-        if (neighborCost < bestNeighborCost) {
-          best_neighbor = neighbor;
-          bestNeighborCost = neighborCost;
+bool TabuSearch::solutionIsNotInTabuList(const vector<int> &solution) {
+  return std::none_of(tabuList.begin(), tabuList.end(),
+                      [&](const auto &element) { return element == solution; });
+}
+
+void TabuSearch::solve() {
+  Problem currentSolution(this->tasks);
+  generateInitialSolution(currentSolution);
+
+  for (size_t i{0}; i < maxIterations; ++i) {
+    vector<vector<int>> solutions{generateSolutions(currentSolution.solution)};
+    vector<int> currentBestSolution;
+    int currentBestSolutionCost{std::numeric_limits<int>::max()};
+
+    for (const auto &solution : solutions) {
+      if (solutionIsNotInTabuList(solution)) {
+        int solutionCost{evaluateSolution(solution)};
+        if (solutionCost < currentBestSolutionCost) {
+          currentBestSolution = solution;
+          currentBestSolutionCost = solutionCost;
         }
       }
     }
+    currentSolution.solution = currentBestSolution;
+    tabuList.push_back(currentBestSolution);
 
-    currentSolution.solution = best_neighbor;
-    tabuList.push_back(best_neighbor);
-
-    if (tabuList.size() > tabuListSize) tabuList.erase(tabuList.begin());
-
-    if (evaluateSolution(best_neighbor) < evaluateSolution(bestSolution))
-      bestSolution = best_neighbor;  // current neighbor is better
+    checkCurrentTabuListSize();
+    compareWithBestSolution(currentBestSolution, currentBestSolutionCost);
   }
-  solution = bestSolution;
-  std::cout << "data" << currentData << ".txt cmax = " << new_calculateCMax()
-            << endl;
-
-  return bestSolution;
+  this->solution = bestSolution;
 }
 
-vector<int> TabuSearch::generateRandomSolution(int n) {
-  vector<int> solution(n);
-  for (int i = 0; i < n; ++i) solution[i] = i;
-
-  random_shuffle(solution.begin(), solution.end());
-
-  return solution;
+vector<int> TabuSearch::generateRandomInitialSolution() {
+  vector<int> sol(initiallyOrderedTasks.size());
+  for (size_t i{0}; i < sol.size(); ++i) sol[i] = i + 1;
+  random_shuffle(sol.begin(), sol.end());
+  return sol;
 }
 
-vector<int> TabuSearch::generateRandomSolution2() {
+vector<int> TabuSearch::generateSchrageAsInitialSolution() {
   Schrage initialSolution(tasks);
   initialSolution.solve();
-  vector<int> solution;
-  std::transform(initialSolution.sortedList.begin(),
-                 initialSolution.sortedList.end(), std::back_inserter(solution),
-                 [](const Task &task) { return task.id - 1; });
-  // cout << " TO JEST WEJŚĆIE DO TABU" << endl;
-  // for(auto& sol : solution){
-  //   cout << sol << " ";
-  // }
-  // cout << endl;
-  // cout << endl;
-  return solution;
+  vector<int> sol = initialSolution.solution;
+  return sol;
 }
