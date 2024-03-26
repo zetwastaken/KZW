@@ -39,7 +39,7 @@ void solveSchrage(string data, int i) {
 
 void solveTabuSearch(string data, int i) {
   std::unique_ptr<Problem> results =
-      std::make_unique<TabuSearch>(100, 10, i + 1);
+      std::make_unique<TabuSearch>(35, 5, i + 1);
   showSolution(std::move(results), data, i);
 }
 
